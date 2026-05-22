@@ -1,56 +1,38 @@
-const cartService = require('../services/cartService');
+const cartService        = require('../services/cartService');
 const { getProductById, hasStock } = require('../services/productService');
-const normalizeId = require('../utils/normalizeId');
  
 // 🛒 Ver carrito
 const getCart = (req, res) => {
     const cartItems = cartService.buildCartItems(req.session, getProductById);
-    const total = cartService.calcTotal(cartItems);
+    const total     = cartService.calcTotal(cartItems);
     res.render('pages/cart', { cartItems, total });
 };
  
-// ➕ Agregar producto
+// ➕ Agregar producto — producto ya validado por middleware en req.product
 const addToCart = (req, res) => {
-    const productId = normalizeId(req.params.id);
+    const { id } = req.product;
  
-    if (!productId) return res.status(400).render('pages/400');
+    if (!hasStock(id)) return res.redirect('/');
  
-    const product = getProductById(productId);
- 
-    if (!product) return res.status(404).render('pages/404');
-    if (!hasStock(productId)) return res.redirect('/');
- 
-    cartService.addItem(req.session, productId);
+    cartService.addItem(req.session, id);
     res.redirect('/cart');
 };
  
 // ➕ Aumentar cantidad
 const increaseQuantity = (req, res) => {
-    const productId = normalizeId(req.params.id);
- 
-    if (!productId) return res.status(400).render('pages/400');
- 
-    cartService.increaseItem(req.session, productId);
+    cartService.increaseItem(req.session, req.product.id);
     res.redirect('/cart');
 };
  
 // ➖ Disminuir cantidad
 const decreaseQuantity = (req, res) => {
-    const productId = normalizeId(req.params.id);
- 
-    if (!productId) return res.status(400).render('pages/400');
- 
-    cartService.decreaseItem(req.session, productId);
+    cartService.decreaseItem(req.session, req.product.id);
     res.redirect('/cart');
 };
  
 // ❌ Eliminar producto
 const removeFromCart = (req, res) => {
-    const productId = normalizeId(req.params.id);
- 
-    if (!productId) return res.status(400).render('pages/400');
- 
-    cartService.removeItem(req.session, productId);
+    cartService.removeItem(req.session, req.product.id);
     res.redirect('/cart');
 };
  

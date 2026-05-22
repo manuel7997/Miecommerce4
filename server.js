@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const app = express();
+require('./db/database');
 
 // ⚙️ Configuración del motor de vistas
 app.set('view engine', 'ejs');

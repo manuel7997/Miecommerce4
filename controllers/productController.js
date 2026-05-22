@@ -1,41 +1,29 @@
-const { getHomeProducts, getProductById, getRelatedProducts, sortByPrice, searchByName } = require('../services/productService');
-const normalizeId = require('../utils/normalizeId');
-
+const { getHomeProducts, getRelatedProducts, sortByPrice, searchByName } = require('../services/productService');
+ 
 // 🏠 Mostrar home con sugeridos y destacados — soporta ?sort=asc|desc
 const getProducts = (req, res) => {
     const { suggested, featured } = getHomeProducts();
     const sort = req.query.sort;
-
-    const sortedSuggested = sortByPrice(suggested, sort);
-    const sortedFeatured = sortByPrice(featured, sort);
-
+ 
     res.render('pages/index', {
-        products: sortedSuggested,
-        featured: sortedFeatured,
-        sort: sort || ''
+        products: sortByPrice(suggested, sort),
+        featured: sortByPrice(featured, sort),
+        sort:     sort || ''
     });
 };
-
-// 📦 Mostrar detalle de un producto + relacionados
+ 
+// 📦 Mostrar detalle — producto ya validado por middleware, vive en req.product
 const getProductByIdController = (req, res) => {
-    const id = normalizeId(req.params.id);
-
-    if (!id) return res.status(400).render('pages/400');
-
-    const product = getProductById(id);
-
-    if (!product) return res.status(404).render('pages/404');
-
+    const product = req.product;
     const related = getRelatedProducts(product);
     res.render('pages/product', { product, related });
 };
-
+ 
 // 🔍 Buscar productos por nombre
 const searchProducts = (req, res) => {
-    const query = req.query.query || '';
+    const query   = req.query.query || '';
     const results = searchByName(query);
-
     res.render('pages/search', { results, query });
 };
-
-module.exports = { getProducts, getProductById: getProductByIdController, searchProducts };
+ 
+module.exports = { getProducts, getProductByIdController, searchProducts };

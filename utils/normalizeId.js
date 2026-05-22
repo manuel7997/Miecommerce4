@@ -11,12 +11,11 @@ const normalizeId = (rawId) => {
     const str = String(rawId).trim();
     if (str === '') return null;
  
-    // Rechazar si contiene caracteres no numéricos (incluyendo puntos y signos)
+    // Rechazar si contiene caracteres no numéricos
     if (!/^\d+$/.test(str)) return null;
  
     const id = parseInt(str, 10);
  
-    // Rechazar cero o negativos (por si acaso parseInt lo produce)
     if (id <= 0) return null;
  
     return id;

@@ -59,23 +59,35 @@ const clearCart = (session) => {
     saveCart(session, []);
 };
  
-// 💰 Calcular total combinando sesión con datos reales de productos
+// 💰 Calcular total
 const calcTotal = (cartItems) => {
     return cartItems.reduce((sum, item) => sum + item.subtotal, 0);
 };
  
-// 🧾 Construir ítems del carrito con datos del producto
+// 🧾 Construir ítems del carrito con datos reales desde DB
+// Si un producto fue eliminado de la DB, se filtra del carrito silenciosamente
 const buildCartItems = (session, getProductById) => {
     const cart = getCart(session);
  
-    return cart.map(item => {
+    const items = [];
+ 
+    for (const item of cart) {
         const product = getProductById(item.productId);
-        return {
-            ...product,
+ 
+        // Producto ya no existe en la DB → lo ignoramos
+        if (!product) continue;
+ 
+        items.push({
+            id:       product.id,
+            name:     product.name,
+            price:    product.price,
+            images:   product.images,
             quantity: item.quantity,
             subtotal: product.price * item.quantity
-        };
-    });
+        });
+    }
+ 
+    return items;
 };
  
 module.exports = {

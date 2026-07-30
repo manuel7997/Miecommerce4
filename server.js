@@ -1,17 +1,25 @@
 const express = require('express');
 const session = require('express-session');
+
+const cors = require('cors');
 const path = require('path');
 const app = express();
+
+
 require('./db/database');
 
-// ⚙️ Configuración del motor de vistas
+
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// 📁 Archivos estáticos
+
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🔐 Configuración de sesión
+app.use(cors());
+
+
 app.use(session({
     secret: 'botines-store-secret',
     resave: false,
@@ -19,24 +27,25 @@ app.use(session({
     cookie: { secure: false }
 }));
 
-// 🧩 Middlewares para leer formularios
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// 🛒 Middleware global — inyecta cartCount en todas las vistas
+
 app.use((req, res, next) => {
     const cart = req.session.cart || [];
     res.locals.cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     next();
 });
 
-// 📋 Middleware logger
+
 app.use((req, res, next) => {
     console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
     next();
 });
+app.use('/api', require('./routes/api'));
 
-// 🖼️ Middleware de layout — wrappea las vistas con main.ejs (excepto login y registro)
+
 const NO_LAYOUT = ['pages/login', 'pages/register'];
 
 app.use((req, res, next) => {

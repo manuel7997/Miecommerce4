@@ -9,6 +9,12 @@ CREATE TABLE IF NOT EXISTS products (
     stock       INTEGER NOT NULL DEFAULT 0,
     category    TEXT    NOT NULL
 );
+
+-- 🏷️ Categorías
+CREATE TABLE IF NOT EXISTS categories (
+    id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT    NOT NULL UNIQUE
+);
  
 -- 👤 Usuarios
 CREATE TABLE IF NOT EXISTS users (

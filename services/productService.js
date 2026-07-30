@@ -72,13 +72,74 @@ const searchByName = (query) => {
              .all(`%${normalized.toLowerCase()}%`)
              .map(mapProduct);
 };
+// 📋 Todos los productos (para GET /api/products)
+const getAllProducts = () => {
+    return db.prepare('SELECT * FROM products').all().map(mapProduct);
+};
+
+// ➕ Crear producto nuevo
+const createProduct = (data) => {
+    const stmt = db.prepare(`
+        INSERT INTO products (name, price, description, image, featured, stock, category)
+        VALUES (@name, @price, @description, @image, @featured, @stock, @category)
+    `);
+
+    const result = stmt.run({
+        name:        data.name,
+        price:       data.price,
+        description: data.description || '',
+        image:       data.image || (data.images ? data.images[0] : '') || '',
+        featured:    data.featured ? 1 : 0,
+        stock:       data.stock ?? 0,
+        category:    data.category || ''
+    });
+
+    return getProductById(result.lastInsertRowid);
+};
+
+// ✏️ Actualizar producto existente
+const updateProduct = (id, data) => {
+    const stmt = db.prepare(`
+        UPDATE products
+        SET name = @name, price = @price, description = @description,
+            image = @image, featured = @featured, stock = @stock, category = @category
+        WHERE id = @id
+    `);
+
+    stmt.run({
+        id,
+        name:        data.name,
+        price:       data.price,
+        description: data.description || '',
+        image:       data.image || (data.images ? data.images[0] : '') || '',
+        featured:    data.featured ? 1 : 0,
+        stock:       data.stock ?? 0,
+        category:    data.category || ''
+    });
+
+    return getProductById(id);
+};
+
+// ❌ Eliminar producto
+const deleteProduct = (id) => {
+    return db.prepare('DELETE FROM products WHERE id = ?').run(id);
+};
+
+const getProductsCount = () => {
+    return db.prepare('SELECT COUNT(*) AS total FROM products').get().total;
+};
  
 module.exports = {
     getHomeProducts,
+    getAllProducts,
     getProductById,
     getRelatedProducts,
     getProductsByCategory,
     hasStock,
     sortByPrice,
-    searchByName
+    searchByName,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    getProductsCount
 };
